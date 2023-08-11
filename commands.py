@@ -18,7 +18,7 @@ intents = discord.Intents.all()
 client = commands.Bot(command_prefix='.', intents=intents)
 
 intents.message_content = True
-token = ""
+token = os.environ.get('TOKEN')
 
 FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
@@ -53,7 +53,8 @@ async def play(ctx, arg):
         else: 
             liner_notes = yt.extract_info(arg, download=False)
 
-    url = liner_notes['formats'][0]['url']
+    # url = liner_notes['formats'][0]['url']
+    url = liner_notes['url']
     thumbnail = liner_notes['thumbnails'][0]['url']
     song_title = liner_notes['title']
 
