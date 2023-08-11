@@ -1,8 +1,9 @@
 from ast import alias
 import discord
 import os
+import requests
 from discord.ext import commands
-from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 
 # TODO: play
 # TODO: pause
@@ -17,7 +18,9 @@ intents = discord.Intents.all()
 client = commands.Bot(command_prefix='.', intents=intents)
 
 intents.message_content = True
-token = (os.getenv("TOKEN"))
+token = ""
+
+FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 @client.event
 async def on_ready():
@@ -39,5 +42,24 @@ async def leave(ctx):
     await ctx.send('bye')
     await ctx.voice_client.disconnect()
 
+@client.command(name='play')
+async def play(ctx, arg):
+    with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as yt:
+        try:
+            requests.get(arg)
+        except Exception as e:
+            print(e)
 
+        else: 
+            liner_notes = yt.extract_info(arg, download=False)
+
+    url = liner_notes['formats'][0]['url']
+    thumbnail = liner_notes['thumbnails'][0]['url']
+    song_title = liner_notes['title']
+
+    voice = discord.utils.get(client.voice_clients)
+    await ctx.send(thumbnail)
+    await ctx.send(f"Now Plaing: {song_title}")
+    source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTS)
+    voice.play(source)
 client.run(token)
