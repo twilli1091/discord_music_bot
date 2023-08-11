@@ -1,9 +1,11 @@
 from ast import alias
 import discord
+import asyncio
 import os
 import requests
 from discord.ext import commands
 from yt_dlp import YoutubeDL
+from collections import deque, namedtuple
 
 # TODO: play
 # TODO: pause
@@ -16,6 +18,8 @@ from yt_dlp import YoutubeDL
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix='.', intents=intents)
+q = deque()
+music = namedtuple('music', ('song_title', 'url', 'thumbnail'))
 
 intents.message_content = True
 token = os.environ.get('TOKEN')
@@ -43,7 +47,7 @@ async def leave(ctx):
     await ctx.voice_client.disconnect()
 
 @client.command(name='play')
-async def play(ctx, arg):
+async def play(ctx, *, arg):
     with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as yt:
         try:
             requests.get(arg)
@@ -58,9 +62,45 @@ async def play(ctx, arg):
     thumbnail = liner_notes['thumbnails'][0]['url']
     song_title = liner_notes['title']
 
+    await queue(ctx, q, song_title, url, thumbnail)
     voice = discord.utils.get(client.voice_clients)
-    await ctx.send(thumbnail)
-    await ctx.send(f"Now Plaing: {song_title}")
-    source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTS)
-    voice.play(source)
+
+    if voice.is_playing():
+        await ctx.send(thumbnail)
+        await ctx.send(f"Added to queue: {song_title}")
+        return
+    else:
+        await ctx.send(thumbnail)
+        await ctx.send(f"Now Playing: {song_title}")
+
+        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTS)
+        voice.play(source, after=lambda ee: play_queue(ctx))
+
+async def queue(ctx, q, song_title, url, thumbnail):
+
+    song = music(song_title,url,thumbnail)
+    q.append(song)
+
+async def play_queue(ctx):
+    if q.empty():
+        return await ctx.send('No songs in the queue')
+
+    song = q.pop(0)
+
+    voice = discord.utils.get(client.voice_clients)
+    source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
+
+    if voice.is_playing():
+        voice.stop()
+
+    voice.play(source, after=lambda e: play_queue(ctx))
+    await ctx.send(song.thumbnail)
+    await ctx.send(f"Now Playing: {song.song_title}")
+
+def prepare_continue_queue(ctx):
+    fut = asyncio.run_coroutine_threadsafe(play_queue(ctx), client.loop)
+    try:
+        fut.result()
+    except Exception as e:
+        print(e)
 client.run(token)
