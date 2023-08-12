@@ -9,7 +9,6 @@ from collections import deque, namedtuple
 # TODO: pause
 # TODO: skip
 # TODO: clear
-# TODO: show queue
 # TODO: Accept links,
 # TODO: request play
 # TODO: Shuffle mode
@@ -99,9 +98,14 @@ async def show_queue(ctx):
     x = 1
     for i in q:
         await ctx.send(x)
-        await ctx.send(i.thumbnail)
+        # await ctx.send(i.thumbnail)  ## removed to avoid rate limit
         await ctx.send(i.song_title)
         x += 1
+
+@client.command(name='clear')
+async def clear_queue(ctx):
+    q.clear()
+    await ctx.send('Queue has been cleared')
 # async def play_queue(ctx):
 
 #     print('in here')
