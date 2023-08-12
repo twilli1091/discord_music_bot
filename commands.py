@@ -119,4 +119,4 @@ async def queue(ctx, q, song_title, url, thumbnail):
 #         fut.result()
 #     except Exception as e:
 #         print(e)
-# client.run(token)
+client.run(token)
