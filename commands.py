@@ -113,10 +113,10 @@ async def queue(ctx, q, song_title, url, thumbnail):
 #     await ctx.send(song.thumbnail)
 #     await ctx.send(f"Now Playing: {song.song_title}")
 
-def prepare_continue_queue(ctx):
-    fut = asyncio.run_coroutine_threadsafe(play_queue(ctx), client.loop)
-    try:
-        fut.result()
-    except Exception as e:
-        print(e)
-client.run(token)
+# def prepare_continue_queue(ctx):
+#     fut = asyncio.run_coroutine_threadsafe(play_queue(ctx), client.loop)
+#     try:
+#         fut.result()
+#     except Exception as e:
+#         print(e)
+# client.run(token)
