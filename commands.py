@@ -8,7 +8,6 @@ from collections import deque, namedtuple
 
 # TODO: pause
 # TODO: skip
-# TODO: clear
 # TODO: Accept links,
 # TODO: request play
 # TODO: Shuffle mode
