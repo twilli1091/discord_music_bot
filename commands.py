@@ -1,4 +1,3 @@
-from ast import alias
 import discord
 import asyncio
 import os
