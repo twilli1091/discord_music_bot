@@ -68,34 +68,46 @@ async def play(ctx, *, arg):
     if voice.is_playing():
         await ctx.send(thumbnail)
         await ctx.send(f"Added to queue: {song_title}")
-        return
-    else:
-        await ctx.send(thumbnail)
-        await ctx.send(f"Now Playing: {song_title}")
 
-        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTS)
-        voice.play(source, after=lambda ee: play_queue(ctx))
+    while voice.is_playing():
+        await asyncio.sleep(1) 
+
+    if q is None:
+        return await ctx.send('No songs in the queue')
+
+    song = q.pop()
+    voice = discord.utils.get(client.voice_clients)
+    source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
+
+    if voice.is_playing():
+        print('playing')
+        voice.stop()
+
+    voice.play(source)
+    await ctx.send(song.thumbnail)
+    await ctx.send(f"Now Playing: {song.song_title}")
 
 async def queue(ctx, q, song_title, url, thumbnail):
 
     song = music(song_title,url,thumbnail)
     q.append(song)
 
-async def play_queue(ctx):
-    if q.empty():
-        return await ctx.send('No songs in the queue')
+# async def play_queue(ctx):
+#     print('in here')
+#     if q.empty():
+#         return await ctx.send('No songs in the queue')
 
-    song = q.pop(0)
+#     song = q.pop(0)
 
-    voice = discord.utils.get(client.voice_clients)
-    source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
+#     voice = discord.utils.get(client.voice_clients)
+#     source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
 
-    if voice.is_playing():
-        voice.stop()
+#     if voice.is_playing():
+#         voice.stop()
 
-    voice.play(source, after=lambda e: play_queue(ctx))
-    await ctx.send(song.thumbnail)
-    await ctx.send(f"Now Playing: {song.song_title}")
+#     await voice.play(source, after=lambda e: play_queue(ctx))
+#     await ctx.send(song.thumbnail)
+#     await ctx.send(f"Now Playing: {song.song_title}")
 
 def prepare_continue_queue(ctx):
     fut = asyncio.run_coroutine_threadsafe(play_queue(ctx), client.loop)
