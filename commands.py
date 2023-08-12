@@ -7,7 +7,6 @@ from discord.ext import commands
 from yt_dlp import YoutubeDL
 from collections import deque, namedtuple
 
-# TODO: play
 # TODO: pause
 # TODO: skip
 # TODO: clear
@@ -96,7 +95,16 @@ async def queue(ctx, q, song_title, url, thumbnail):
     song = music(song_title,url,thumbnail)
     q.append(song)
 
+@client.command(name='queue')
+async def show_queue(ctx):
+    x = 1
+    for i in q:
+        await ctx.send(x)
+        await ctx.send(i.thumbnail)
+        await ctx.send(i.song_title)
+        x += 1
 # async def play_queue(ctx):
+
 #     print('in here')
 #     if q.empty():
 #         return await ctx.send('No songs in the queue')
