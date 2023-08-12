@@ -2,7 +2,7 @@ from ast import alias
 import discord
 import asyncio
 import os
-import requests
+import aiohttp
 from discord.ext import commands
 from yt_dlp import YoutubeDL
 from collections import deque, namedtuple
@@ -48,9 +48,13 @@ async def leave(ctx):
 
 @client.command(name='play')
 async def play(ctx, *, arg):
+    
     with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as yt:
         try:
-            requests.get(arg)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(arg) as s:
+                    print (s.status)
+
         except Exception as e:
             print(e)
 
@@ -70,7 +74,7 @@ async def play(ctx, *, arg):
         await ctx.send(f"Added to queue: {song_title}")
 
     while voice.is_playing():
-        await asyncio.sleep(1) 
+        await asyncio.sleep(2) 
 
     if q is None:
         return await ctx.send('No songs in the queue')
