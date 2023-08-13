@@ -29,17 +29,20 @@ async def on_ready():
 #should prob add some error handling here
 @client.command(name='join')
 async def join(ctx):
-    await ctx.send('hello')
-    voice_channel = ctx.author.voice.channel
-    await ctx.send(voice_channel)
-    if ctx.voice_client is not None:
-        return await ctx.voice_client.move_to(voice_channel)
-    await voice_channel.connect()
+    try:
+        voice_channel = ctx.author.voice.channel
+        if ctx.voice_client is not None:
+            return await ctx.voice_client.move_to(voice_channel)
+        await ctx.send(f'Joining {voice_channel}')
+        await voice_channel.connect()
+    except:
+        await ctx.send('Request failed, requester not in Voice Channel')
 
 #should prob add some error handling here
 @client.command(name='leave')
 async def leave(ctx):
     await ctx.send('bye')
+    
     await ctx.voice_client.disconnect()
 
 @client.command(name='play')
