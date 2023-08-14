@@ -127,3 +127,23 @@ async def skip(ctx):
 
 client.run(token)
 
+'''
+2023-08-13 21:32:45 ERROR    discord.ext.commands.bot Ignoring exception in command play
+Traceback (most recent call last):
+  File "/home/twill/Desktop/repos/discord_music_bot/.venv/lib/python3.10/site-packages/discord/ext/commands/core.py", line 235, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "/home/twill/Desktop/repos/discord_music_bot/commands.py", line 81, in play
+    song = q.pop()
+IndexError: pop from an empty deque
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/twill/Desktop/repos/discord_music_bot/.venv/lib/python3.10/site-packages/discord/ext/commands/bot.py", line 1350, in invoke
+    await ctx.command.invoke(ctx)
+  File "/home/twill/Desktop/repos/discord_music_bot/.venv/lib/python3.10/site-packages/discord/ext/commands/core.py", line 1029, in invoke
+    await injected(*ctx.args, **ctx.kwargs)  # type: ignore
+  File "/home/twill/Desktop/repos/discord_music_bot/.venv/lib/python3.10/site-packages/discord/ext/commands/core.py", line 244, in wrapped
+    raise CommandInvokeError(exc) from exc
+discord.ext.commands.errors.CommandInvokeError: Command raised an exception: IndexError: pop from an empty deque
+'''
