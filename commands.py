@@ -69,7 +69,7 @@ async def play(ctx, *, arg):
     voice = discord.utils.get(client.voice_clients)
 
     if voice.is_playing():
-        await ctx.send(thumbnail)
+        # await ctx.send(thumbnail)
         await ctx.send(f"Added to queue: {song_title}")
 
     while voice.is_playing():
@@ -79,16 +79,17 @@ async def play(ctx, *, arg):
         return await ctx.send('No songs in the queue')
 
     song = q.pop()
-    voice = discord.utils.get(client.voice_clients)
     source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
 
     if voice.is_playing():
         print('playing')
         voice.stop()
 
+
     voice.play(source)
-    await ctx.send(song.thumbnail)
-    await ctx.send(f"Now Playing: {song.song_title}")
+
+    await ctx.send(f"Now Playing: {song.song_title} \n {song.thumbnail}")
+
 
 async def queue(ctx, q, song_title, url, thumbnail):
 
@@ -99,37 +100,30 @@ async def queue(ctx, q, song_title, url, thumbnail):
 async def show_queue(ctx):
     x = 1
     for i in q:
-        await ctx.send(x)
+        await ctx.send(f'Position:{x} \n Song: {i.song_title}')
         # await ctx.send(i.thumbnail)  ## removed to avoid rate limit
-        await ctx.send(i.song_title)
+        # await ctx.send(i.song_title)
         x += 1
 
 @client.command(name='clear')
 async def clear_queue(ctx):
     q.clear()
     await ctx.send('Queue has been cleared')
-# async def play_queue(ctx):
 
-#     print('in here')
-#     if q.empty():
-#         return await ctx.send('No songs in the queue')
+@client.command(name='skip')
+async def skip(ctx):
+    print (len(q))
+    song = q.pop()
+    voice = discord.utils.get(client.voice_clients)
+    source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
+    try:
+        if voice.is_playing():
+            voice.stop()
+            return await ctx.send('song sipped')
+        else:
+            await ctx.send('Queue is empty')
+    except Exception:
+        pass
 
-#     song = q.pop(0)
-
-#     voice = discord.utils.get(client.voice_clients)
-#     source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
-
-#     if voice.is_playing():
-#         voice.stop()
-
-#     await voice.play(source, after=lambda e: play_queue(ctx))
-#     await ctx.send(song.thumbnail)
-#     await ctx.send(f"Now Playing: {song.song_title}")
-
-# def prepare_continue_queue(ctx):
-#     fut = asyncio.run_coroutine_threadsafe(play_queue(ctx), client.loop)
-#     try:
-#         fut.result()
-#     except Exception as e:
-#         print(e)
 client.run(token)
+
