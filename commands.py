@@ -75,8 +75,9 @@ async def play(ctx, *, arg):
     while voice.is_playing():
         await asyncio.sleep(2) 
 
-    if q is None:
+    if not q:
         return await ctx.send('No songs in the queue')
+        
 
     song = q.pop()
     source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
@@ -119,11 +120,12 @@ async def skip(ctx):
     try:
         if voice.is_playing():
             voice.stop()
-            return await ctx.send('song sipped')
+            await ctx.send('song skipped')
         else:
             await ctx.send('Queue is empty')
     except Exception:
         pass
+    return ctx
 
 client.run(token)
 
