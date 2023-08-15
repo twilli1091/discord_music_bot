@@ -72,7 +72,7 @@ async def play(ctx, *, arg):
         # await ctx.send(thumbnail)
         await ctx.send(f"Added to queue: {song_title}")
 
-    while voice.is_playing():
+    while voice.is_playing(): ## <---race is happening here 
         await asyncio.sleep(2) 
 
     if not q:
