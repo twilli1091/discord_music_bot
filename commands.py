@@ -79,7 +79,7 @@ async def play(ctx, *, arg):
         return await ctx.send('No songs in the queue')
         
 
-    song = q.pop()
+    song = q.popleft()
     source = await discord.FFmpegOpusAudio.from_probe(song.url, **FFMPEG_OPTS)
 
     if voice.is_playing():
