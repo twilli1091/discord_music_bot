@@ -3,7 +3,7 @@ from discord.ext import commands
 # from collections import deque, namedtuple
 from yt_dlp import YoutubeDL
 from discord.ext import commands
-
+import asyncio
 class Test(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -19,29 +19,28 @@ class Test(commands.Cog):
         voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
         return voice_client and voice_client.is_connected()
         
-    @commands.hybrid_command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def hello(self, ctx):
-        await ctx.reply(f"Hello {ctx.author.mention}")
-
     def find_song(self,item):
         with YoutubeDL(self.yt_options) as yt:
             data = yt.extract_info("ytsearch:%s" % item, download=False)['entries'][0]
             # print (data)
         return {'source': data['url'],'title': data['title'],'thumbnail' : data['thumbnail']}
     
-    def play_next(self):
+    def play_next(self,ctx):
         if len(self.q) > 0:
             self.is_playing = True
             m_url = self.q[0][0]['source']
-            #get the first url
+            m_tn = self.q[0][0]['thumbnail']     
+            m_title = self.q[0][0]['title']  
+            coro = ctx.send(f"Now playing: {m_title} \n {m_tn}")
+            fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
+            try:
+                fut.result()
+            except:
+                pass
 
-            #remove the first element as you are currently playing it
-            # await ctx.send(f"Now playing: {m_title} \n {m_tn}")
-            
             self.q.pop(0)
 
-            self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next())
+            self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next(ctx))
 
         else:
             self.is_playing = False
@@ -71,10 +70,8 @@ class Test(commands.Cog):
             #remove the first element as you are currently playing it
             await Test.play_msg(self,ctx)
             self.q.pop(0)
-            # await ctx.send(f"Now playing: {m_title} \n {m_tn}")
             
-            self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next())
-            # self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS),(await self.play_next() for _ in '_').__anext__())
+            self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next(ctx))
         else:
             self.is_playing = False
 
