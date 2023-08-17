@@ -22,7 +22,6 @@ class Test(commands.Cog):
     def find_song(self,item):
         with YoutubeDL(self.yt_options) as yt:
             data = yt.extract_info("ytsearch:%s" % item, download=False)['entries'][0]
-            # print (data)
         return {'source': data['url'],'title': data['title'],'thumbnail' : data['thumbnail']}
     
     def play_next(self,ctx):
@@ -46,7 +45,6 @@ class Test(commands.Cog):
             self.is_playing = False
 
     async def play_msg(self,ctx):
-            # m_url = self.q[0][0]['source']
             m_tn = self.q[0][0]['thumbnail']     
             m_title = self.q[0][0]['title']  
             await ctx.send(f"Now playing: {m_title} \n {m_tn}")
@@ -95,10 +93,9 @@ class Test(commands.Cog):
         try:
             voice_channel = ctx.author.voice.channel
             
-            # print (voice_channel)
             if Test.is_connected(ctx) is not None:
-                # print (voice_channel)
                 return await ctx.voice_client.move_to(voice_channel)
+
             await ctx.send(f'Joining {voice_channel}')
             await voice_channel.connect()
         except Exception as e:
@@ -115,7 +112,7 @@ class Test(commands.Cog):
     async def queue(self,ctx):
         retval = ""
         for i in range(0, len(self.q)):
-            # display a max of 0 songs in the current queue
+            # display a max of 10 songs in the current queue
             if (i > 10): break
             retval += self.q[i][0]['title'] + "\n"
 
@@ -134,7 +131,6 @@ class Test(commands.Cog):
     @commands.command(name='leave')
     async def leave(self,ctx):
         if Test.is_connected(ctx):
-            # self.vc.stop() 
             await ctx.voice_client.disconnect()
 
 async def setup(client):
