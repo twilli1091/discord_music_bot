@@ -105,5 +105,37 @@ class Test(commands.Cog):
             await ctx.send(e)
             await ctx.send('Request failed, requester not in Voice Channel')
 
+
+    @commands.command(name='skip')
+    async def skip(self,ctx):
+        if Test.is_connected(ctx):
+            self.vc.stop()
+
+    @commands.command(name='queue')
+    async def queue(self,ctx):
+        retval = ""
+        for i in range(0, len(self.q)):
+            # display a max of 0 songs in the current queue
+            if (i > 10): break
+            retval += self.q[i][0]['title'] + "\n"
+
+        if retval != "":
+            await ctx.send(f"Songs in queue:\n{retval}")
+        else:
+            await ctx.send("No music in queue")
+
+    @commands.command(name='clear')
+    async def clear(self,ctx):
+        if Test.is_connected(ctx):
+            self.vc.stop() 
+            self.q = []
+            await ctx.send("Queue has been cleared")
+
+    @commands.command(name='leave')
+    async def leave(self,ctx):
+        if Test.is_connected(ctx):
+            # self.vc.stop() 
+            await ctx.voice_client.disconnect()
+
 async def setup(client):
     await client.add_cog(Test(client))
