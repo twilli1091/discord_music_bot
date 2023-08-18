@@ -4,6 +4,7 @@ from discord.ext import commands
 from yt_dlp import YoutubeDL
 from discord.ext import commands
 import asyncio
+
 class Test(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -124,7 +125,7 @@ class Test(commands.Cog):
     @commands.command(name='clear')
     async def clear(self,ctx):
         if Test.is_connected(ctx):
-            self.vc.stop() 
+            # self.vc.stop() 
             self.q = []
             await ctx.send("Queue has been cleared")
 
