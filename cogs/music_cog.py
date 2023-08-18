@@ -5,7 +5,7 @@ from yt_dlp import YoutubeDL
 from discord.ext import commands
 import asyncio
 
-class Test(commands.Cog):
+class Music_Cog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.is_playing = False
@@ -56,7 +56,7 @@ class Test(commands.Cog):
 
             m_url = self.q[0][0]['source']    
             #try to connect to voice channel if you are not already connected
-            if not Test.is_connected(ctx):
+            if not Music_Cog.is_connected(ctx):
                 self.vc = await self.q[0][1].connect()
 
                 #in case we fail to connect
@@ -67,7 +67,7 @@ class Test(commands.Cog):
                 self.vc = discord.utils.get(self.client.voice_clients)
             
             #remove the first element as you are currently playing it
-            await Test.play_msg(self,ctx)
+            await Music_Cog.play_msg(self,ctx)
             self.q.pop(0)
             
             self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next(ctx))
@@ -94,7 +94,7 @@ class Test(commands.Cog):
         try:
             voice_channel = ctx.author.voice.channel
             
-            if Test.is_connected(ctx) is not None:
+            if Music_Cog.is_connected(ctx) is not None:
                 return await ctx.voice_client.move_to(voice_channel)
 
             await ctx.send(f'Joining {voice_channel}')
@@ -106,7 +106,7 @@ class Test(commands.Cog):
 
     @commands.command(name='skip')
     async def skip(self,ctx):
-        if Test.is_connected(ctx):
+        if Music_Cog.is_connected(ctx):
             self.vc.stop()
 
     @commands.command(name='queue')
@@ -124,15 +124,15 @@ class Test(commands.Cog):
 
     @commands.command(name='clear')
     async def clear(self,ctx):
-        if Test.is_connected(ctx):
-            # self.vc.stop() 
+        if Music_Cog.is_connected(ctx):
+            self.vc.stop() 
             self.q = []
             await ctx.send("Queue has been cleared")
 
     @commands.command(name='leave')
     async def leave(self,ctx):
-        if Test.is_connected(ctx):
+        if Music_Cog.is_connected(ctx):
             await ctx.voice_client.disconnect()
 
 async def setup(client):
-    await client.add_cog(Test(client))
+    await client.add_cog(Music_Cog(client))
