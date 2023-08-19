@@ -6,6 +6,14 @@ from yt_dlp import YoutubeDL
 from discord.ext import commands
 import asyncio
 
+#TODO:shuffle 
+#TODO:add numbers and song time to queue list
+#TODO:song search only shows thumbnail if url is used
+#TODO:add song name to added to queue msg
+#TODO: IO error: Connection reset by peer
+#TODO: Help Cog to show commands 
+#TODO: Volume to high
+
 class Music_Cog(commands.Cog):
     def __init__(self, client):
         self.client = client
