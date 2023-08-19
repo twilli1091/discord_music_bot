@@ -149,10 +149,8 @@ class Music_Cog(commands.Cog):
                     self.q.appendleft([hp, voice_channel ])
             if self.is_playing:
                 self.vc.stop() 
-                await ctx.send('Fuck you Mike')
             else:
                 await self.play_music(ctx)
-                await ctx.send('Fuck you Mike')
 
 async def setup(client):
     await client.add_cog(Music_Cog(client))
