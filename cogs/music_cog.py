@@ -103,7 +103,6 @@ class Music_Cog(commands.Cog):
             await ctx.send(e)
             await ctx.send('Request failed, requester not in Voice Channel')
 
-
     @commands.command(name='skip')
     async def skip(self,ctx):
         if Music_Cog.is_connected(ctx):
@@ -121,18 +120,39 @@ class Music_Cog(commands.Cog):
             await ctx.send(f"Songs in queue:\n{retval}")
         else:
             await ctx.send("No music in queue")
-
+    
     @commands.command(name='clear')
     async def clear(self,ctx):
         if Music_Cog.is_connected(ctx):
-            self.vc.stop() 
-            self.q = []
+            if self.is_playing:
+                self.vc.stop() 
+            self.q = deque()
             await ctx.send("Queue has been cleared")
 
     @commands.command(name='leave')
     async def leave(self,ctx):
         if Music_Cog.is_connected(ctx):
             await ctx.voice_client.disconnect()
+
+    @commands.command(name='hp')
+    @commands.has_role('hotpiss')
+    async def hp(self, ctx):
+       voice_channel = ctx.author.voice.channel
+
+       if Music_Cog.is_connected(ctx):
+            with YoutubeDL(self.yt_options) as yt:
+                data = yt.extract_info("ytsearch:hot piss", download=False)['entries'][0]
+                hp = {'source': data['url'],'title': data['title'],'thumbnail' : data['thumbnail']}
+                if not self.q:
+                    self.q.append([hp, voice_channel ])
+                else:
+                    self.q.appendleft([hp, voice_channel ])
+            if self.is_playing:
+                self.vc.stop() 
+                await ctx.send('Fuck you Mike')
+            else:
+                await self.play_music(ctx)
+                await ctx.send('Fuck you Mike')
 
 async def setup(client):
     await client.add_cog(Music_Cog(client))
