@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from collections import deque
 # from collections import deque, namedtuple
 from yt_dlp import YoutubeDL
 from discord.ext import commands
@@ -10,8 +11,7 @@ class Music_Cog(commands.Cog):
         self.client = client
         self.is_playing = False
         self.is_paused = False
-
-        self.q = []
+        self.q = deque()
         self.FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         self.yt_options = {'format': 'bestaudio', 'noplaylist': 'True'}
         self.vc = None
@@ -38,7 +38,7 @@ class Music_Cog(commands.Cog):
             except:
                 pass
 
-            self.q.pop(0)
+            self.q.popleft()
 
             self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next(ctx))
 
@@ -68,7 +68,7 @@ class Music_Cog(commands.Cog):
             
             #remove the first element as you are currently playing it
             await Music_Cog.play_msg(self,ctx)
-            self.q.pop(0)
+            self.q.popleft()
             
             self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTS), after=lambda e: self.play_next(ctx))
         else:
