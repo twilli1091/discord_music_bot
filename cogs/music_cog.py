@@ -91,7 +91,7 @@ class Music_Cog(commands.Cog):
         if type(song) ==type(True):
             await ctx.send('error')
         else:
-            await ctx.send("added song to queue")
+            await ctx.send(f"added song '{song['title']}' to queue")
             self.q.append([song, voice_channel ])
 
             if self.is_playing == False:
