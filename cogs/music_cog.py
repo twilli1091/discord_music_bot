@@ -24,7 +24,7 @@ class Music_Cog(commands.Cog):
         self.yt_options = {'format': 'bestaudio', 'noplaylist': 'True'}
         self.vc = None
 
-    @commands.command(name='help')
+    @commands.command(name='hc')
     async def help(self, ctx):
         help_text = """
         **Music Bot Commands:**
@@ -163,7 +163,7 @@ class Music_Cog(commands.Cog):
         else:
             await ctx.send("Please enter a value between 0 and 100.")
 
-    @commands.command(name='current_volume')
+    @commands.command(name='cv')
     async def get_volume(self, ctx):
         await ctx.send(f"Current volume is {int(self.volume * 100)}%")
 
