@@ -34,6 +34,8 @@ class Music_Cog(commands.Cog):
         - `.queue`: Shows the current song queue.
         - `.clear`: Clears the song queue.
         - `.leave`: Bot leaves the voice channel.
+        - `.volume`: Sets volume level between 0 - 100.
+        - `.cv`: Returns current volume level.
         - `.hp`: Plays the "hot piss" song (requires 'hotpiss' role).
         """
         await ctx.send(help_text)
@@ -150,6 +152,20 @@ class Music_Cog(commands.Cog):
                 self.vc.stop() 
             self.q = deque()
             await ctx.send("Queue has been cleared")
+
+    @commands.command(name='volume')
+    async def set_volume(self, ctx, volume: int):
+        if 0 <= volume <= 100:
+            self.volume = volume / 100
+            if self.vc and self.vc.source:
+                self.vc.source.volume = self.volume
+            await ctx.send(f"Volume set to {volume}%")
+        else:
+            await ctx.send("Please enter a value between 0 and 100.")
+
+    @commands.command(name='current_volume')
+    async def get_volume(self, ctx):
+        await ctx.send(f"Current volume is {int(self.volume * 100)}%")
 
     @commands.command(name='leave')
     async def leave(self,ctx):
