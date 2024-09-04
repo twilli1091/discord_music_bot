@@ -23,6 +23,20 @@ class Music_Cog(commands.Cog):
         self.FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         self.yt_options = {'format': 'bestaudio', 'noplaylist': 'True'}
         self.vc = None
+
+    @commands.command(name='help')
+    async def help(self, ctx):
+        help_text = """
+        **Music Bot Commands:**
+        - `.play <song name>`: Plays a song or adds it to the queue.
+        - `.join`: Bot joins your voice channel.
+        - `.skip`: Skips the current song.
+        - `.queue`: Shows the current song queue.
+        - `.clear`: Clears the song queue.
+        - `.leave`: Bot leaves the voice channel.
+        - `.hp`: Plays the "hot piss" song (requires 'hotpiss' role).
+        """
+        await ctx.send(help_text)
         
     def is_connected(ctx):
         voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
