@@ -5,13 +5,14 @@ from collections import deque
 from yt_dlp import YoutubeDL
 from discord.ext import commands
 import asyncio
+import aiohttp
 
-#TODO:shuffle 
+#TODO:shuffle
 #TODO:add numbers and song time to queue list
 #TODO:song search only shows thumbnail if url is used
 #TODO:add song name to added to queue msg
 #TODO: IO error: Connection reset by peer
-#TODO: Help Cog to show commands 
+#TODO: Help Cog to show commands
 #TODO: Volume to high
 
 class Music_Cog(commands.Cog):
@@ -20,9 +21,11 @@ class Music_Cog(commands.Cog):
         self.is_playing = False
         self.is_paused = False
         self.q = deque()
+        self.playlists = {}  # Dictionary to store playlists
         self.FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-        self.yt_options = {'format': 'bestaudio', 'noplaylist': 'True'}
+        self.yt_options = {'format': 'bestaudio', 'noplaylist': False , 'flat_playlist': True, 'ignoreerrors': True}
         self.vc = None
+        self.volume = 1  # Default volume (100%)
 
     @commands.command(name='hc')
     async def help(self, ctx):
@@ -35,7 +38,7 @@ class Music_Cog(commands.Cog):
         - `.clear`: Clears the song queue.
         - `.leave`: Bot leaves the voice channel.
         - `.volume`: Sets volume level between 0 - 100.
-        - `.cv`: Returns current volume level.
+        - `.cvolume`: Returns current volume level.
         - `.hp`: Plays the "hot piss" song (requires 'hotpiss' role).
         """
         await ctx.send(help_text)
@@ -44,10 +47,29 @@ class Music_Cog(commands.Cog):
         voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
         return voice_client and voice_client.is_connected()
         
-    def find_song(self,item):
-        with YoutubeDL(self.yt_options) as yt:
-            data = yt.extract_info("ytsearch:%s" % item, download=False)['entries'][0]
-        return {'source': data['url'],'title': data['title'],'thumbnail' : data['thumbnail']}
+    async def find_song(self, item):
+        async with aiohttp.ClientSession() as session:
+            with YoutubeDL(self.yt_options) as yt:
+                try:
+                    if "list=" in item:
+                        data = yt.extract_info(item, download=False)
+                        if 'entries' in data:
+                            for entry in data['entries']:
+                                async with session.head(entry['url']) as response:
+                                    if response.status == 200:
+                                        yield {'source': entry['url'], 'title': entry['title'], 'thumbnail': entry['thumbnail']}
+                        else:
+                            async with session.head(data['url']) as response:
+                                if response.status == 200:
+                                    yield {'source': data['url'], 'title': data['title'], 'thumbnail': data['thumbnail']}
+                    else:
+                        data = yt.extract_info(f"ytsearch:{item}", download=False)['entries'][0]
+                        async with session.head(data['url']) as response:
+                            if response.status == 200:
+                                yield {'source': data['url'], 'title': data['title'], 'thumbnail': data['thumbnail']}
+                except Exception as e:
+                    print(f"Error occurred: {e}")
+                    yield None
     
     def play_next(self,ctx):
         if len(self.q) > 0:
@@ -99,19 +121,28 @@ class Music_Cog(commands.Cog):
             self.is_playing = False
 
     @commands.command(name="play")
-    async def play(self,ctx, *args):
-        search= " ".join(args)
+    async def play(self, ctx, *args):
+        search = " ".join(args)
         voice_channel = ctx.author.voice.channel
-        
-        song = self.find_song(search)
-        if type(song) ==type(True):
-            await ctx.send('error')
-        else:
-            await ctx.send(f"added song '{song['title']}' to queue")
-            self.q.append([song, voice_channel ])
-
-            if self.is_playing == False:
-                await self.play_music(ctx)
+    
+        song_generator = self.find_song(search)
+        first_song = None
+    
+        async for song in song_generator:
+            if song:
+                if not first_song:
+                    first_song = song
+                    await ctx.send(f"Added song '{first_song['title']}' to queue.")
+                    self.q.append([first_song, voice_channel])
+                
+                    if not self.is_playing:
+                        await self.play_music(ctx)
+                else:
+                    self.q.append([song, voice_channel])
+                    await ctx.send(f"Added song '{song['title']}' to queue.")
+    
+        if not first_song:
+            await ctx.send('Error: Could not find the song or playlist.')
 
     @commands.command(name='join')
     async def join(self, ctx):
@@ -163,7 +194,7 @@ class Music_Cog(commands.Cog):
         else:
             await ctx.send("Please enter a value between 0 and 100.")
 
-    @commands.command(name='cv')
+    @commands.command(name='cvolume')
     async def get_volume(self, ctx):
         await ctx.send(f"Current volume is {int(self.volume * 100)}%")
 
